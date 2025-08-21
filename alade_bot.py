@@ -1,12 +1,15 @@
 import ollama
 
+def get_prompt():
+    pass
+
 # creatign the ollama client
 
 client = ollama.Client()
 
 # defining the LLM model used and the prompt
 
-model = "llama2:7b"
+model = "auntie_alade"
 prompt = "hi there"
 
 # sending the prompt to the model
