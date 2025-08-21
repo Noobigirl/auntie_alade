@@ -1,10 +1,13 @@
+import os
 from chatterbot import ChatBot
+from dotenv import load_dotenv
 from chatterbot.trainers import ListTrainer
 from openai import OpenAI
 
+load_dotenv()
 client = OpenAI(
-  base_url="https://openrouter.ai/api/v1",
-  api_key="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",
+  base_url ="https://openrouter.ai/api/v1",
+  api_key = os.getenv("OPENAI_API_KEY"),
 )
 
 completion = client.chat.completions.create(
@@ -17,9 +20,11 @@ completion = client.chat.completions.create(
   messages=[
     {
       "role": "user",
-      "content": "fuck you?"
+      "content": "hello how are you"
     }
-  ]
+  ],
+  max_tokens= 100,  # limiting the length of the answers
+  temperature = 0.7 # keeping the bot casual
 )
 print(completion.choices[0].message.content)
 
@@ -55,3 +60,4 @@ trainer.train(conversation)
 # response = chatbot.get_response("Hello friend")
 # print(response)
 
+# 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
