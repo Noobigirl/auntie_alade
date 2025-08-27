@@ -3,7 +3,7 @@ from streamlit_option_menu import option_menu
 import streamlit as st 
 import pandas as pd 
 import os
-import io
+
 
 # --- page config
 st.set_page_config(
@@ -28,11 +28,11 @@ TEST_DATA_FILE = "period_data.csv" # each user will have its how CSV for privacy
 def change_header(new_header: str, divider = "red") -> None:
     global page_header
     page_header.empty() # erasing the previous header
-    page_header.header(new_header, divider= divider) # adding the new one
+    page_header.header(new_header, divider = divider) # adding the new one
 
 # file handling
 def upload_file():
-    period_data = st.file_uploader("Upload your period CSV", type = "csv")
+    period_data = st.file_uploader("Upload your period data CSV", type = "csv")
 
     if period_data is not None:
         # saving the file
@@ -51,8 +51,8 @@ def upload_file():
 
     
 def create_file() : # creating a new csv an letting the user donwload it
-    df = pd.DataFrame(columns=["date", "has_period_started", "flow", "mood"])
-    csv_bytes = df.to_csv(index=False).encode("uft_8")
+    df = pd.DataFrame(columns=["has_period_started","date","pain","flow","mood"])
+    csv_bytes = df.to_csv(index=False).encode("UTF-8")
 
     st.success("New period data file created! Please download it and keep it safe")
     st.download_button(
@@ -65,10 +65,11 @@ def create_file() : # creating a new csv an letting the user donwload it
     # saving a reference just in case
     os.makedirs("user_files", exist_ok=True)
     file_path = os.path.join("user_files", "my_period_data.csv")
+
     with open(file_path, "wb") as f:
         f.write(csv_bytes)
     # storing file path in cookie
-    cookies.set("perion_file_path", file_path)
+    cookies.set("period_file_path", file_path)
     # creating the CSV file
     return file_path
 
@@ -81,7 +82,8 @@ if saved_file_path and os.path.exists(saved_file_path):
 
     try: # trying to read the exsisting data file
         df = pd.read_csv(saved_file_path)
-        st.success(f"using your saved period data: {saved_file_path}")
+        st.success(f"Using your saved period data: {saved_file_path}")
+
     except Exception as e: # in case it is moved or deleted
         st.error(f"Could not read saved file: {e}")
         st.warning("Please re-upload or create a new file.")
@@ -92,6 +94,12 @@ if saved_file_path and os.path.exists(saved_file_path):
             if new_path: saved_file_path = new_path
 
         with col2:
+             # just to center the button
+            st.write(" ")
+            st.write(" ")
+            st.write(" ")
+            st.write(" ")
+
             if st.button("Create new file"):
                 saved_file_path = create_file()
         # in that case, what do we do next?
@@ -105,9 +113,10 @@ else:
         saved_file_path = upload_file()
 
     with col2:
+
         st.write(" ")
         st.write(" ")
-        st.write("  ")
+        st.write(" ")
         st.write(" ")
 
         if st.button("Create new file", use_container_width= True):
@@ -116,8 +125,7 @@ else:
 
 # --- App UI 
 
-
-
+main_page_content = st.empty()
 # sidebar menu
 with st.sidebar: # everything that goes insid the sidebar
 
@@ -147,4 +155,52 @@ elif selected_page == "Talk to Auntie":
 else:
     change_header("Settings")
 
-st.date_input("Select period start date")
+
+
+if "period_status" not in st.session_state:
+    st.session_state.period_status = None
+
+# user should only be able to select either or 
+st.session_state.period_status = st.radio(
+    "Did your period start?",
+    ["Yes", "No"],
+    index= None
+)
+
+
+
+# alowing to input only if file exsists
+if saved_file_path:
+    if st.session_state.period_status == "Yes":
+        st.session_state.period_date = st.date_input("Select period start date") 
+
+        
+
+        st.session_state.pain = st.selectbox(
+            "How much pain do you feel:",
+            ["no pain", "moderate", "painfull", "very painfull", "excruciating"]
+        )
+
+        st.session_state.flow = st.selectbox(
+            "How heavy is your period: ",
+            ["light", "normal", "heavy", "I'm BLEEDING"]
+        )
+
+        st.session_state.mood = st.selectbox(
+            "How do you feel",
+            ["Happy", "Sad", "Normal", "Angry", "Other"]
+        )
+        
+        if st.session_state.mood == "Other":
+            custom_mood = st.text_input("Tell auntie your mood")
+            mood = custom_mood if custom_mood else mood
+
+
+    elif st.session_state.period_status == "No":
+        st.write("Don't forget to record your next period")
+        st.write("You can talk to auntie if there is anything you need.")
+
+        
+    
+
+    
