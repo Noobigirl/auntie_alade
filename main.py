@@ -1,87 +1,121 @@
-import streamlit as st 
-import os
-import json
-import pandas as pd 
+from streamlit_cookies_controller import CookieController # some user data will be saved in a cookie
 from streamlit_option_menu import option_menu
+import streamlit as st 
+import pandas as pd 
+import os
+import io
+
+# --- page config
+st.set_page_config(
+    page_title= "Auntie Alade",
+    #page icon = (I'll add it later)
+    initial_sidebar_state= "expanded" # making the sidebar open by default
+)
+
+page_header = st.empty() # used to erase and replace page header
+cookies = CookieController()
+
 
 CONFIG_FILE = "config.json" # to remember the CSV file path
 TEST_DATA_FILE = "period_data.csv" # each user will have its how CSV for privacy
-page_header = st.empty()
+
+
 
 
 # --- Helper functions
+
+# to change the header
 def change_header(new_header: str, divider = "red") -> None:
     global page_header
     page_header.empty() # erasing the previous header
     page_header.header(new_header, divider= divider) # adding the new one
 
-
-def save_config(csv_path):
-    with open(CONFIG_FILE, "w") as f:
-        json.dump({"csv_path": csv_path}, f)
-
-
-def load_config():
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, "r") as f:
-            return json.load(f).get("csv_path") # getting the latest path
-    return None
-
-def create_default_csv():
-    df = pd.DataFrame(columns=["date","has_period_started","flow","mood"])
-    default_file = "my_period_data.csv"
-    df.to_csv(default_file, index=False)
-    return default_file
-
-
-# --- App UI
-
-# -- Config
-
-csv_path = load_config()
-
+# file handling
 def upload_file():
     period_data = st.file_uploader("Upload your period CSV", type = "csv")
 
     if period_data is not None:
-        csv_path = period_data.name
-        with open(csv_path, "wb") as f:
+        # saving the file
+        os.makedirs("user_files", exist_ok= True)
+        file_path = os.path.join("user_files", period_data.name)
+        
+        with open(file_path, "wb") as f:
             f.write(period_data.getbuffer())
-        save_config(csv_path)
-        st.success("Period data uploaded and saved for next time!")
-        df = pd.read_csv(csv_path)
+        
+        st.success(f"File uploaded and saved at {file_path}")
 
-    # if we find the path and the file is exsisting there
-if csv_path and os.path.exists(csv_path):
-    st.success(f"Using your saved period data: {csv_path}")
-    df = pd.read_csv(csv_path)
+        # storing the file path in cookies
+        cookies.set("period_file_path", file_path)
+        return file_path
+    return None
+
+    
+def create_file() : # creating a new csv an letting the user donwload it
+    df = pd.DataFrame(columns=["date", "has_period_started", "flow", "mood"])
+    csv_bytes = df.to_csv(index=False).encode("uft_8")
+
+    st.success("New period data file created! Please download it and keep it safe")
+    st.download_button(
+        label= "Download CSV",
+        data= csv_bytes,
+        file_name= "my_period_data.csv",
+        mime="text/csv"
+    )
+
+    # saving a reference just in case
+    os.makedirs("user_files", exist_ok=True)
+    file_path = os.path.join("user_files", "my_period_data.csv")
+    with open(file_path, "wb") as f:
+        f.write(csv_bytes)
+    # storing file path in cookie
+    cookies.set("perion_file_path", file_path)
+    # creating the CSV file
+    return file_path
+
+
+# --- loading or creating a period data CSV file
+saved_file_path = cookies.get("period_file_path")
+df = None
+
+if saved_file_path and os.path.exists(saved_file_path):
+
+    try: # trying to read the exsisting data file
+        df = pd.read_csv(saved_file_path)
+        st.success(f"using your saved period data: {saved_file_path}")
+    except Exception as e: # in case it is moved or deleted
+        st.error(f"Could not read saved file: {e}")
+        st.warning("Please re-upload or create a new file.")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            new_path = upload_file()
+            if new_path: saved_file_path = new_path
+
+        with col2:
+            if st.button("Create new file"):
+                saved_file_path = create_file()
+        # in that case, what do we do next?
+
 else:
-    # prompting the user to upload a file or create a new file
-    upload = st.checkbox("Create a new period data file", value= False)
-    create = st.checkbox("Upload period data", value= False)
-    if upload:
-        upload_file()
-    elif create:
-        csv_path = create_default_csv()
-        save_config(csv_path)
-        st.success(f"New data file created: {csv_path}")
 
-        with open(csv_path, "rb") as f:
-            st.download_button("Download CSV", f, file_name=csv_path)
-        df = pd.read_csv(csv_path)
+    st.info("No saved file found. Please upload or create one.")
+    col1, col2 = st.columns(2)
 
+    with col1:
+        saved_file_path = upload_file()
 
-# page "backend" 
+    with col2:
+        st.write(" ")
+        st.write(" ")
+        st.write("  ")
+        st.write(" ")
 
+        if st.button("Create new file", use_container_width= True):
+            saved_file_path = create_file()
 
 
-#load_data()
-# page options
-st.set_page_config(
-    page_title= "Auntie Alade",
-    #page icon =
-    initial_sidebar_state= "expanded" # sidebar open by default
-)
+# --- App UI 
+
 
 
 # sidebar menu
@@ -94,12 +128,13 @@ with st.sidebar: # everything that goes insid the sidebar
         icons = ["bi bi-house-door-fill",  # got the icons from bootstrap
                 "bi bi-emoji-laughing", 
                 "bi bi-heart", 
-                "bi bi-gear-wide-connected"],
+                "bi bi-gear-wide-connected"
+                ],
         default_index = 0 # selects "Home" as the default page
     )
 
 
-# main page
+# --- main page
 if selected_page == "Home" :
     change_header("Period Tracker")
 
