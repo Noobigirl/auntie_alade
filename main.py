@@ -73,6 +73,36 @@ def create_file() : # creating a new csv an letting the user donwload it
     # creating the CSV file
     return file_path
 
+# saving the entered data to the CSV file
+def save_info(new_row, file_path):
+    try:
+        df = pd.read_csv(file_path)
+
+        # checking if we already recorded the date's period
+
+        check = (df["date"] == new_row["date"]) & (df["has_period_started"] == new_row["has_period_started"])
+
+        if check.any():
+            
+            # only updating the other fields
+            df.loc[check,
+            ["pain", "flow", "mood"]] = [
+                new_row["has_period_started"],
+                new_row["pain"],
+                new_row["flow"], 
+                new_row["mood"]
+            ]
+        else:
+            # adding a new row to the CSV
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index= True)
+
+    except FileNotFoundError:
+        # creating a new data frame if no file exists
+        df = pd.DataFrame([new_row])
+
+    df.to_csv(file_path, index= False)
+    st.success("Your period data has been saved!")
+
 
 # --- loading or creating a period data CSV file
 saved_file_path = cookies.get("period_file_path")
@@ -93,7 +123,7 @@ if saved_file_path and os.path.exists(saved_file_path):
             new_path = upload_file()
             if new_path: saved_file_path = new_path
 
-        with col2:
+        with col2: 
              # just to center the button
             st.write(" ")
             st.write(" ")
@@ -168,19 +198,12 @@ st.session_state.period_status = st.radio(
 )
 
 
-
-# alowing to input only if file exsists
+# allowing input only if file exists
 if saved_file_path:
     if st.session_state.period_status == "Yes":
         st.session_state.period_date = st.date_input("Select period start date") 
 
-        
-
-        st.session_state.pain = st.selectbox(
-            "How much pain do you feel:",
-            ["no pain", "moderate", "painfull", "very painfull", "excruciating"]
-        )
-
+        st.session_state.pain = st.slider("Pain level (0= none, 10 = severe)", 0, 10, 5)
         st.session_state.flow = st.selectbox(
             "How heavy is your period: ",
             ["light", "normal", "heavy", "I'm BLEEDING"]
@@ -193,8 +216,24 @@ if saved_file_path:
         
         if st.session_state.mood == "Other":
             custom_mood = st.text_input("Tell auntie your mood")
-            mood = custom_mood if custom_mood else mood
+            mood = custom_mood if custom_mood else "Other"
 
+        # date = st.session_state.get("period_date")
+        # pain = st.session_state.get("pain")
+        # flow = st.session_state.get("flow")
+        # mood_record = st.session_state.get("mood")
+        
+        if st.button("Save period data"):
+            new_row = {
+            "date": st.session_state.period_date ,
+            "has_period_started": "Yes",
+            "flow": st.session_state.flow,
+            "pain": st.session_state.pain,
+            "mood": st.session_state.mood
+            }
+
+            save_info(new_row, saved_file_path)
+    
 
     elif st.session_state.period_status == "No":
         st.write("Don't forget to record your next period")
