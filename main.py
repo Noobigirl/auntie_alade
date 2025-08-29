@@ -37,7 +37,6 @@ st.markdown(
 )
 
 
-
 # --- page config
 st.set_page_config(
     page_title= "Auntie Alade",
@@ -48,10 +47,7 @@ st.set_page_config(
 page_header = st.empty() # used to erase and replace page header
 cookies = CookieController()
 
-
-CONFIG_FILE = "config.json" # to remember the CSV file path
-TEST_DATA_FILE = "period_data.csv" # each user will have its how CSV for privacy
-
+sucess_save = False 
 
 # --- Helper functions
 
@@ -106,11 +102,12 @@ def create_file() : # creating a new csv an letting the user donwload it
 
 # saving the entered data to the CSV file
 def save_info(new_row, file_path):
+    global sucess_save
     try:
         df = pd.read_csv(file_path)
 
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index= True)
-        df.drop_duplicates(inplace=True, keep= "first", subset=["date"])
+        df.drop_duplicates(inplace=True, keep= "last", subset=["date"])
      
     except FileNotFoundError:
         st.write("file not found")
@@ -118,7 +115,9 @@ def save_info(new_row, file_path):
         df = pd.DataFrame([new_row])
 
     df.to_csv(file_path, index= False)
-    st.success("Your period data has been saved!")
+    sucess_save = True
+   
+
 
 
 # --- loading or creating a period data CSV file
@@ -149,7 +148,6 @@ if saved_file_path and os.path.exists(saved_file_path):
 
             if st.button("Create new file"):
                 saved_file_path = create_file()
-        # in that case, what do we do next?
 
 else:
 
@@ -204,7 +202,6 @@ else:
     change_header("Settings")
 
 
-
 if "period_status" not in st.session_state:
     st.session_state.period_status = None
 
@@ -219,8 +216,10 @@ st.session_state.period_status = st.radio(
 # allowing input only if file exists
 if saved_file_path:
     if st.session_state.period_status == "Yes":
+
         st.session_state.period_date = str(st.date_input("Select period start date") )
-        today = str(date.today())
+        today = str(date.today()) # storing the current date to avoid duplicates
+
         st.session_state.pain = st.slider("Pain level (0= none, 10 = severe)", 0, 10, 5)
         st.session_state.flow = st.selectbox(
             "How heavy is your period: ",
@@ -240,6 +239,10 @@ if saved_file_path:
         st.write(today)
         st.write(data_already_entered)
 
+        if "change_message" not in st.session_state:
+            # flag to know when to change the message
+            st.session_state.change_message = False 
+
         if st.button("Save period data", disabled= data_already_entered):
             new_row = {
             "date": st.session_state.period_date ,
@@ -248,11 +251,19 @@ if saved_file_path:
             "pain": st.session_state.pain,
             "mood": st.session_state.mood
             }
-
             save_info(new_row, saved_file_path)
+            st.session_state.change_message = not st.session_state.change_message
         
-        if data_already_entered:
-            st.info("You already recorded your period for today")
+        if st.session_state.change_message:
+            st.success("Your period data has been saved!")
+
+        else:
+                if sucess_save:
+                    st.info("You already recorded your period for today")
+                elif data_already_entered:
+                    st.info("You already recorded your period for today")
+
+
     elif st.session_state.period_status == "No":
         st.write("Don't forget to record your next period")
         st.write("You can talk to auntie if there is anything you need.")
