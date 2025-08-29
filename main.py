@@ -25,7 +25,7 @@ TEST_DATA_FILE = "period_data.csv" # each user will have its how CSV for privacy
 # --- Helper functions
 
 # to change the header
-def change_header(new_header: str, divider = "red") -> None:
+def change_header(new_header: str, divider = "grey") -> None:
     global page_header
     page_header.empty() # erasing the previous header
     page_header.header(new_header, divider = divider) # adding the new one
