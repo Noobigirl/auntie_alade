@@ -20,7 +20,7 @@ st.markdown(
 
  
     /* Changing header */
-    h1, h2, h3 {
+    h1, h2{
         border-bottom: 3px solid #DEABDE;
         padding-bottom: 0.3rem;
         margin-bottom: 1rem
@@ -124,6 +124,8 @@ def save_info(new_row, file_path):
 saved_file_path = cookies.get("period_file_path")
 df = None
 
+
+
 if saved_file_path and os.path.exists(saved_file_path):
 
     try: # trying to read the exsisting data file
@@ -202,24 +204,60 @@ else:
     change_header("Settings")
 
 
-if "period_status" not in st.session_state:
-    st.session_state.period_status = None
+# --- tracking ongoing cycle state
 
-# user should only be able to select either or 
-st.session_state.period_status = st.radio(
-    "Did your period start?",
-    ["Yes", "No"],
-    index= None
-)
+if "on_period" not in st.session_state:
+    st.session_state.on_period = False
 
+if "current_start" not in st.session_state:
+    st.session_state.current_start = None
 
-# allowing input only if file exists
+period_end = False        
+data_recorded = False
+
+# --- period data input
 if saved_file_path:
-    if st.session_state.period_status == "Yes":
 
-        st.session_state.period_date = str(st.date_input("Select period start date") )
-        today = str(date.today()) # storing the current date to avoid duplicates
+    if not st.session_state.on_period: 
 
+        if st.button("Start period"):
+            st.session_state.on_period = True
+            st.session_state.current_start = str(date.today())
+            st.success(f"Period started on {st.session_state.current_start}")
+
+
+            # recording period data
+            st.session_state.period_date = st.session_state.current_start
+            st.session_state.pain = st.slider("Pain level (0= none, 10 = severe)", 0, 10, 5)
+            st.session_state.flow = st.selectbox(
+                "How heavy is your period: ",
+                ["light", "normal", "heavy", "I'm BLEEDING"]
+            )
+
+            st.session_state.mood = st.selectbox(
+                "How do you feel",
+                ["Happy", "Sad", "Normal", "Angry", "Other"]
+            )
+            
+            if st.session_state.mood == "Other":
+                custom_mood = st.text_input("Tell auntie your mood")
+                mood = custom_mood if custom_mood else "Other"
+            data_recorded = True
+
+    else:
+        st.info(f"Period ongoing since {st.session_state.current_start}")
+
+
+        if st.button("End Period"):
+            end_date = date.today()
+            df = pd.read_csv(saved_file_path)
+            cycle_lenght = (end_date - pd.to_datetime(st.session_state.current_start)).days
+            st.success(f"Period ended on {end_date}")
+
+            st.session_state.on_period = False
+            st.session_state.current_start = None
+       
+        st.session_state.period_date = str(st.date_input("Today's date") )
         st.session_state.pain = st.slider("Pain level (0= none, 10 = severe)", 0, 10, 5)
         st.session_state.flow = st.selectbox(
             "How heavy is your period: ",
@@ -235,38 +273,48 @@ if saved_file_path:
             custom_mood = st.text_input("Tell auntie your mood")
             mood = custom_mood if custom_mood else "Other"
         
-        data_already_entered = today in df["date"].tolist()
-        st.write(today)
-        st.write(data_already_entered)
-
-        if "change_message" not in st.session_state:
-            # flag to know when to change the message
-            st.session_state.change_message = False 
-
-        if st.button("Save period data", disabled= data_already_entered):
-            new_row = {
-            "date": st.session_state.period_date ,
-            "has_period_started": "Yes",
-            "flow": st.session_state.flow,
-            "pain": st.session_state.pain,
-            "mood": st.session_state.mood
-            }
-            save_info(new_row, saved_file_path)
-            st.session_state.change_message = not st.session_state.change_message
-        
-        if st.session_state.change_message:
-            st.success("Your period data has been saved!")
-
-        else:
-                if sucess_save:
-                    st.info("You already recorded your period for today")
-                elif data_already_entered:
-                    st.info("You already recorded your period for today")
+        data_recorded = True
 
 
-    elif st.session_state.period_status == "No":
-        st.write("Don't forget to record your next period")
-        st.write("You can talk to auntie if there is anything you need.")
+    data_already_entered = st.session_state.period_date in df["date"].tolist()
+    st.write(data_already_entered)
 
-        
+    if "change_message" not in st.session_state:
+        # flag to know when to change the message
+        st.session_state.change_message = False 
+
+    if st.button("Save period data", disabled= data_already_entered):
+        new_row = {
+        "date": st.session_state.period_date ,
+        "has_period_started": "Yes",
+        "flow": st.session_state.flow,
+        "pain": st.session_state.pain,
+        "mood": st.session_state.mood
+        }
+        save_info(new_row, saved_file_path)
+        st.session_state.change_message = not st.session_state.change_message
     
+    if st.session_state.change_message:
+        st.success("Your period data has been saved!")
+    else:
+            if sucess_save:
+                st.info("You already recorded your period data")
+            elif data_already_entered:
+                st.info("You already recorded your period data")
+
+
+        
+# periods = df["date"].tolist()
+
+# dates = pd.to_datetime(periods)
+
+# cycle_df = pd.DataFrame({
+#     "Start Date": dates,
+#     "Cycle Length (days)": dates.to_series().diff().dt.days
+# })
+
+# st.write(" ")
+# st.subheader("Cycle length")
+# st.write(" ")
+# # line chart of cycle lenghts
+# st.line_chart(cycle_df.set_index("Start Date")["Cycle Length (days)"])
