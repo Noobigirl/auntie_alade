@@ -1,8 +1,41 @@
 from streamlit_cookies_controller import CookieController # some user data will be saved in a cookie
 from streamlit_option_menu import option_menu
+from datetime import date
 import streamlit as st 
 import pandas as pd 
 import os
+
+
+# --- custom page styling
+
+st.markdown(   
+    """
+    <style>
+
+    /* Change button focus color */ 
+    button:focus, button: focus-visible {
+        outline : none !important;
+        box-shadow: 0 0 0 3px #FF5733 !important;
+    }
+
+ 
+    /* Changing header */
+    h1, h2, h3 {
+        border-bottom: 3px solid #DEABDE;
+        padding-bottom: 0.3rem;
+        margin-bottom: 1rem
+    }
+
+    p {
+        font-size: 1.2rem !important;
+        line-heigt: 1.6;
+    }
+
+    </style>
+    """, 
+    unsafe_allow_html= True
+)
+
 
 
 # --- page config
@@ -20,15 +53,13 @@ CONFIG_FILE = "config.json" # to remember the CSV file path
 TEST_DATA_FILE = "period_data.csv" # each user will have its how CSV for privacy
 
 
-
-
 # --- Helper functions
 
 # to change the header
-def change_header(new_header: str, divider = "grey") -> None:
+def change_header(new_header: str) -> None:
     global page_header
     page_header.empty() # erasing the previous header
-    page_header.header(new_header, divider = divider) # adding the new one
+    page_header.header(new_header) # adding the new one
 
 # file handling
 def upload_file():
@@ -49,7 +80,6 @@ def upload_file():
         return file_path
     return None
 
-    
 def create_file() : # creating a new csv an letting the user donwload it
     df = pd.DataFrame(columns=["has_period_started","date","pain","flow","mood"])
     csv_bytes = df.to_csv(index=False).encode("UTF-8")
@@ -73,30 +103,17 @@ def create_file() : # creating a new csv an letting the user donwload it
     # creating the CSV file
     return file_path
 
+
 # saving the entered data to the CSV file
 def save_info(new_row, file_path):
     try:
         df = pd.read_csv(file_path)
 
-        # checking if we already recorded the date's period
-
-        check = (df["date"] == new_row["date"]) & (df["has_period_started"] == new_row["has_period_started"])
-
-        if check.any():
-            
-            # only updating the other fields
-            df.loc[check,
-            ["pain", "flow", "mood"]] = [
-                new_row["has_period_started"],
-                new_row["pain"],
-                new_row["flow"], 
-                new_row["mood"]
-            ]
-        else:
-            # adding a new row to the CSV
-            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index= True)
-
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index= True)
+        df.drop_duplicates(inplace=True, keep= "first", subset=["date"])
+     
     except FileNotFoundError:
+        st.write("file not found")
         # creating a new data frame if no file exists
         df = pd.DataFrame([new_row])
 
@@ -175,6 +192,7 @@ with st.sidebar: # everything that goes insid the sidebar
 # --- main page
 if selected_page == "Home" :
     change_header("Period Tracker")
+    
 
 elif selected_page == "Mood tracker":
    change_header("How do we feel today?")
@@ -201,8 +219,8 @@ st.session_state.period_status = st.radio(
 # allowing input only if file exists
 if saved_file_path:
     if st.session_state.period_status == "Yes":
-        st.session_state.period_date = st.date_input("Select period start date") 
-
+        st.session_state.period_date = str(st.date_input("Select period start date") )
+        today = str(date.today())
         st.session_state.pain = st.slider("Pain level (0= none, 10 = severe)", 0, 10, 5)
         st.session_state.flow = st.selectbox(
             "How heavy is your period: ",
@@ -217,13 +235,12 @@ if saved_file_path:
         if st.session_state.mood == "Other":
             custom_mood = st.text_input("Tell auntie your mood")
             mood = custom_mood if custom_mood else "Other"
-
-        # date = st.session_state.get("period_date")
-        # pain = st.session_state.get("pain")
-        # flow = st.session_state.get("flow")
-        # mood_record = st.session_state.get("mood")
         
-        if st.button("Save period data"):
+        data_already_entered = today in df["date"].tolist()
+        st.write(today)
+        st.write(data_already_entered)
+
+        if st.button("Save period data", disabled= data_already_entered):
             new_row = {
             "date": st.session_state.period_date ,
             "has_period_started": "Yes",
@@ -233,13 +250,12 @@ if saved_file_path:
             }
 
             save_info(new_row, saved_file_path)
-    
-
+        
+        if data_already_entered:
+            st.info("You already recorded your period for today")
     elif st.session_state.period_status == "No":
         st.write("Don't forget to record your next period")
         st.write("You can talk to auntie if there is anything you need.")
 
         
-    
-
     
