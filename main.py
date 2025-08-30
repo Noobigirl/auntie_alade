@@ -3,6 +3,7 @@ from streamlit_option_menu import option_menu
 from datetime import date
 import streamlit as st 
 import pandas as pd 
+import altair as alt
 import os
 
 
@@ -212,6 +213,12 @@ if "on_period" not in st.session_state:
 if "current_start" not in st.session_state:
     st.session_state.current_start = None
 
+if "cycles" not in st.session_state: # recording cycle
+    st.session_state.cycles = []
+
+if "period_date" not in st.session_state:
+    st.session_state.period_date = None
+
 period_end = False        
 data_recorded = False
 
@@ -251,9 +258,19 @@ if saved_file_path:
         if st.button("End Period"):
             end_date = date.today()
             df = pd.read_csv(saved_file_path)
-            cycle_lenght = (end_date - pd.to_datetime(st.session_state.current_start)).days
+            cycle_lenght = (pd.to_datetime(end_date) - pd.to_datetime(st.session_state.current_start)).days
             st.success(f"Period ended on {end_date}")
 
+            # saving the cycle
+            st.session_state.cycle.append(
+                {
+                    "start": st.session_state.current_start,
+                    "end": end_date,
+                    "length": cycle_lenght
+                }
+            )
+
+            # reseting everything for the next cycle
             st.session_state.on_period = False
             st.session_state.current_start = None
        
@@ -275,9 +292,11 @@ if saved_file_path:
         
         data_recorded = True
 
-
-    data_already_entered = st.session_state.period_date in df["date"].tolist()
-    st.write(data_already_entered)
+    if st.session_state.period_date :
+        data_already_entered = st.session_state.period_date in df["date"].tolist()
+        st.write(data_already_entered)
+    else:
+        data_already_entered = False
 
     if "change_message" not in st.session_state:
         # flag to know when to change the message
@@ -302,7 +321,36 @@ if saved_file_path:
             elif data_already_entered:
                 st.info("You already recorded your period data")
 
+    # showing chart if we have at least one cycle
+    if st.session_state.cycles:
+        cycle_df = pd.DataFrame(st.session_state.cycles)
 
+        # getting months and years for filtering
+        cycle_df["year"] = pd.to_datetime(cycle_df["start"]).dt.year
+        cycle_df["month"] = pd.to_datetime(df["start"]).dt.month_name()
+
+        # filtering options
+        years = st.multiselect("Filter by year:", options= cycle_df["year"].unique(), default= cycle_df["year"].unique())
+        months = st.multiselect("Filter by month:", options= cycle_df["month"].unique(), default= cycle_df["month"].unique())
+
+        # bar chart
+        chart = (
+            alt.Chart(filtered_df)
+            .mark_bar()
+            .encode(
+                x=alt.X("start:T", title="Cycle Start Date"),
+                y= alt.Y("length:Q", title="Cycle Length (days)"),
+                tooltip= ["start", "end", "lenght"]
+            
+            )
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+
+    if st.session_state.current_start is None:
+        if st.button("Start New Period"):
+            st.session_state.current_start = date.today()
+    
         
 # periods = df["date"].tolist()
 
