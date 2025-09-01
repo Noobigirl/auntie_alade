@@ -1,6 +1,7 @@
 from streamlit_option_menu import option_menu
 import streamlit as st 
 import apps.Home as Home
+import apps.Auntie as Auntie
 
 
 # --- custom page styling
@@ -67,7 +68,7 @@ if selected_page == "Home" :
 elif selected_page == "Mood tracker":
    pass
 elif selected_page == "Talk to Auntie":
-    pass
+    Auntie.app()
 else:
     pass
 
