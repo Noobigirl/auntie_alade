@@ -1,15 +1,21 @@
+from openai import OpenAI
+from dotenv import load_dotenv 
 import streamlit as st
 import time
-import ollama
+import os
+
+load_dotenv() 
+
+# initializig openRouter client
+AiClient = OpenAI(
+    base_url= "https://openrouter.ai/api/v1",
+    api_key= os.getenv("OPENAI_API_KEY")
+)
 
 # using local bot is not sustainable,
 # switch to online api
 def app():
     st.title("Talk to Auntie Alade")
-
-    # --- Initializing the ollama clietn
-    client = ollama.Client()
-    model = "auntie_alade" 
 
     avatars = {
         "user": "static/user.png",
@@ -17,7 +23,6 @@ def app():
     }
 
     # intitializing the chat history
-
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -35,22 +40,25 @@ def app():
             st.markdown(prompt)
 
 
+        # bot reply
         with st.chat_message("assistant", avatar= avatars["assistant"]):
             # adding text typing effect like chat gpt
             placeholder = st.empty()
             placeholder.markdown("Auntie is thinking...")
 
-              # ollama bot response
-            stream = client.chat(
-            model= model,
-            messages= st.session_state.messages,
-            stream = True
-            )
-
             response = ""
+            stream = AiClient.chat.completions.create(
+                model="deepseek/deepseek-chat-v3.1:free",
+                messages=[
+                    {"role": "system", 
+                    "content": "You are Auntie Alade, a nice Nigerian auntie giving friendly period and mood advice, with some tint of Nigerian English"},
+                    *st.session_state.messages
+                ],
+                stream= True
+            )
             for  chunk in stream:
-                if "message" in chunk:
-                    token = chunk["message"]["content"]
+                if chunk.choices[0].delta:
+                    token = chunk.choices[0].delta.content
                     response += token
                     placeholder.markdown(response + "▌")
                     time.sleep(0.04)
