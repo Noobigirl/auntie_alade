@@ -2,6 +2,7 @@ from streamlit_option_menu import option_menu
 import streamlit as st 
 import apps.Home as Home
 import apps.Auntie as Auntie
+import apps.MoodTracker as mood
 
 
 # --- custom page styling
@@ -66,7 +67,7 @@ with st.sidebar: # everything that goes inside the sidebar
 if selected_page == "Home" :
    Home.app()
 elif selected_page == "Mood tracker":
-   pass
+   mood.app()
 elif selected_page == "Talk to Auntie":
     Auntie.app()
 else:

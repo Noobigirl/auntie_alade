@@ -12,8 +12,7 @@ AiClient = OpenAI(
     api_key= os.getenv("OPENAI_API_KEY")
 )
 
-# using local bot is not sustainable,
-# switch to online api
+
 def app():
     st.title("Talk to Auntie Alade")
 

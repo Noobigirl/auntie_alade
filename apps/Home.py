@@ -237,8 +237,8 @@ def app():
             filtered_df = cycle_df[(cycle_df["year"].isin(years)) & (cycle_df["month"].isin(months))]
 
             chart = (
-                alt.Chart(filtered_df).mark_bar(color="#BA5DBA")
-                .mark_bar()
+                alt.Chart(filtered_df)
+                .mark_bar(color="#BA5DBA", size= 50)
                 .encode(
                     x= alt.X("start:T", title="Cycle Start Date"),
                     y= alt.Y("length:Q", title="Cycle Length (days)"),
