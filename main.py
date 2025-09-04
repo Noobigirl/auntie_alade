@@ -3,6 +3,7 @@ import streamlit as st
 import apps.Home as Home
 import apps.Auntie as Auntie
 import apps.MoodTracker as mood
+import apps.Settings as settings
 
 
 # --- custom page styling
@@ -71,5 +72,5 @@ elif selected_page == "Mood tracker":
 elif selected_page == "Talk to Auntie":
     Auntie.app()
 else:
-    pass
+   settings.app()
 

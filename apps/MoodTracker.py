@@ -13,7 +13,7 @@ def load_moods():
     else:
         return pd.DataFrame(columns= ["date", "mood", "notes"])
 
-def save_mood(mood, notes):
+def save_mood(mood, notes) -> None:
     df = load_moods()
     new_entry = {
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -24,9 +24,9 @@ def save_mood(mood, notes):
     df =  pd.concat([df, pd.DataFrame([new_entry])], ignore_index= True)
     df.to_csv(MOOD_FILE, index=False)
 
-def app():
+def app() -> None:
     st.title("Mood Tracker")
-
+    st.write("")
     mood_options = ["😊 Happy", "😢 Sad", "😡 Angry", "😌 Calm", "😰 Anxious", "🤩 Excited"]
     mood = st.selectbox("How do you feel right now?", mood_options)
 
@@ -48,6 +48,9 @@ def app():
         # converting date column
         df["date"] = pd.to_datetime(df["date"])
 
+        max_count = int(df["mood"].value_counts().max())
+        tick_vals = list(range(0, max_count+1))
+
         chart = (
             alt.Chart(df)
             .mark_bar(color = "#BA5DBA", size= 50)
@@ -58,15 +61,15 @@ def app():
                     axis= alt.Axis(labelAngle= 0),
                     ),
                 y= alt.Y(
-                    "count()", 
+                    "count():Q", 
                     title= "Frequency",
-                    axis=alt.Axis(format="d", tickMinStep= 1),
-                    scale= alt.Scale(domainMin=0)
+                    axis=alt.Axis(values= tick_vals, format ="d"),
+                    scale= alt.Scale(domain=[0, max_count])
                     ),
             
                 tooltip=["mood", "count()"]
             )
-            .properties(title="Mood Frequency", width="container", height=400)
+            .properties(title="Mood Frequency", width="container")
         )
 
         st.altair_chart(chart, use_container_width=True)

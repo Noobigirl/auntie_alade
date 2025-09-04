@@ -13,9 +13,9 @@ AiClient = OpenAI(
 )
 
 
-def app():
+def app() -> None:
     st.title("Talk to Auntie Alade")
-
+    st.write("")
     avatars = {
         "user": "static/user.png",
         "assistant": "static/alade_head.png"

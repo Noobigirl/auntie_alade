@@ -7,15 +7,16 @@ import altair as alt
 import os
 
 
-def app():
+def app() -> None:
     cookies = CookieController()
     sucess_save = False 
 
     st.title("Period tracker")
-
+    st.write("")
 
     # file handling
     def upload_file():
+       
         period_data = st.file_uploader("Upload your period data CSV", type = "csv")
 
         if period_data is not None:
@@ -33,7 +34,7 @@ def app():
             return file_path
         return None
 
-    def create_file() : # creating a new csv an letting the user donwload it
+    def create_file() -> str : # creating a new csv and letting the user donwload it
         df = pd.DataFrame(columns=["has_period_started","date","pain","flow","mood"])
         csv_bytes = df.to_csv(index=False).encode("UTF-8")
 
@@ -58,11 +59,10 @@ def app():
 
 
     # saving the entered data to the CSV file
-    def save_info(new_row, file_path):
+    def save_info(new_row, file_path) -> None:
         global sucess_save
         try:
             df = pd.read_csv(file_path)
-
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index= True)
             df.drop_duplicates(inplace=True, keep= "last", subset=["date"])
         
@@ -89,7 +89,7 @@ def app():
         except Exception as e: # in case it is moved or deleted
             st.error(f"Could not read saved file: {e}")
             st.warning("Please re-upload or create a new file.")
-
+    
             col1, col2 = st.columns(2)
             with col1:
                 new_path = upload_file()
@@ -106,7 +106,6 @@ def app():
                     saved_file_path = create_file()
 
     else:
-
         st.info("No saved file found. Please upload or create one.")
         col1, col2 = st.columns(2)
 
@@ -149,7 +148,6 @@ def app():
                 st.session_state.on_period = True
                 st.session_state.current_start = str(date.today())
                 st.success(f"Period started on {st.session_state.current_start}")
-
         else:
             st.info(f"Period ongoing since {st.session_state.current_start}")
 
@@ -181,8 +179,7 @@ def app():
             st.session_state.mood = st.selectbox(
                 "How do you feel",
                 ["Happy", "Sad", "Normal", "Angry", "Other"]
-            )
-            
+            )    
             if st.session_state.mood == "Other":
                 custom_mood = st.text_input("Tell auntie your mood")
                 mood = custom_mood if custom_mood else "Other"
@@ -192,7 +189,6 @@ def app():
             if st.session_state.period_date :
                 data_already_entered = st.session_state.period_date in df["date"].tolist()
                 st.write(data_already_entered)
-
             else:
                 data_already_entered = False
                 st.session_state.current_start = None
@@ -225,7 +221,6 @@ def app():
                         st.info("You already recorded your period data")
         
         # Showing chart if we have cycles
-
         if st.session_state.cycles:
             cycle_df = pd.DataFrame(st.session_state.cycles)
             cycle_df["year"] = pd.to_datetime(cycle_df["start"]).dt.year
@@ -245,7 +240,6 @@ def app():
                     tooltip= ["start", "end", "length"]
                 )
             )
-
             st.altair_chart(chart, use_container_width= True)
 
             # predicting the next period
