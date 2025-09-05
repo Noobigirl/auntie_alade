@@ -1,5 +1,6 @@
 from openai import OpenAI
 from dotenv import load_dotenv 
+import apps.theme as theme
 import streamlit as st
 import time
 import os

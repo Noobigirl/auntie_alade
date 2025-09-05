@@ -4,9 +4,14 @@ import apps.Home as Home
 import apps.Auntie as Auntie
 import apps.MoodTracker as mood
 import apps.Settings as settings
+from apps.theme import apply_custom_theme
 
 
 # --- custom page styling
+
+if "theme" not in st.session_state:
+    st.session_state["theme"] = "dark" #default light
+
 
 st.markdown(   
     """
@@ -49,6 +54,8 @@ st.set_page_config(
 
 main_page_content = st.empty()
 # sidebar menu
+theme = st.session_state["theme"]
+menu_styles = apply_custom_theme()
 with st.sidebar: # everything that goes inside the sidebar
 
     selected_page = option_menu(
@@ -60,12 +67,14 @@ with st.sidebar: # everything that goes inside the sidebar
                 "bi bi-heart", 
                 "bi bi-gear-wide-connected"
                 ],
-        default_index = 0 # selects "Home" as the default page
+        default_index = 0 , # selects "Home" as the default page,,
+        styles= menu_styles
+    
     )
 
 
 # --- page handling
-if selected_page == "Home" :
+if selected_page == "Home":
    Home.app()
 elif selected_page == "Mood tracker":
    mood.app()

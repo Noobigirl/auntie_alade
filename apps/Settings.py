@@ -1,54 +1,15 @@
 import streamlit as st
 import pandas as pd
+import apps.theme as th
 import os
 
 DATA_FILE = "moods.csv"
 
-def apply_custom_theme():
-    theme = st.session_state.get("theme", "light")
-
-    if theme == "Dark":
-        st.markdown(
-            """
-            <style>
-                body {
-                    background-color: #1e1e1e;
-                    color: #f0f0f0;
-                }
-
-                .stApp {
-                    background-color: #1e1e1e;
-                }
-
-                .stButton>button {
-                    background-color: #DEABDE;
-                    color: black;
-
-                }
-            </style>
-            """,
-            unsafe_allow_html= True
-        )
-    else:
-        st.markdown(
-            """
-            <style>
-                body{
-                    background-color: #F7DFF7;
-                    color: black;
-
-                }
-                .stApp{
-                    background-color: #F7DFF7;
-                }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
 
 def app():
+    th.apply_custom_theme()
     st.title("Settings")
-
+    st.write(" ")
     st.markdown(
         "I hope you like this app I made for the **Athena Awards hackathon**."
         "Check out the source code below!"
@@ -60,6 +21,44 @@ def app():
         """
         - This app does **not** send your period or mood data to any sever.
         - You are responsible for saving and uploading you own data files.
-        
+        - The chatbot (*Auntie Alade*) is based on **DeepSeek v3.1 via OpenRouter**.
+          Check [OpenRouter's policy](https://openrouter.ai/docs/features/privacy-and-logging) for details on data privacy
         """
+    )
+
+    st.divider()
+    
+    # theme toggle
+    # st.subheader("Appearance")
+    # theme = st.radio("Choose theme", ["light", "Dark"], horizontal=True)
+    # st.session_state["theme"] = theme
+
+
+    # export data
+    st.subheader(" Data Management")
+    if os.path.exists(DATA_FILE):
+        df = pd.read_csv(DATA_FILE)
+        st.download_button(
+            label= "Download mood data as a CSV",
+            data = df.to_csv(index=False).encode("UTF-8"),
+            file_name="mood_data.csv",
+            mime="text/csv"
         )
+    else:
+        st.info("No mood data available yet to export.")
+
+    
+    # Reset data
+    if st.button("Reset All mood data"):
+        if os.path.exists(DATA_FILE):
+            os.remove(DATA_FILE)
+            st.success("Mood data has veed reset.")
+        else:
+            st.info("No mood data file fount to reset.")
+    
+    # Chart customizatiion
+    st.subheader("Chart Settings")
+    color = st.color_picker("Choose chart color", "#BA5DBA")
+    st.session_state["chart_color"] = color
+
+    st.markdown("Changes will apply when you return to the mood tracker page")

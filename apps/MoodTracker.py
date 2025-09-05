@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd 
 import altair as alt
+import apps.theme as th
 from datetime import datetime
 import os 
 
@@ -25,6 +26,7 @@ def save_mood(mood, notes) -> None:
     df.to_csv(MOOD_FILE, index=False)
 
 def app() -> None:
+
     st.title("Mood Tracker")
     st.write("")
     mood_options = ["😊 Happy", "😢 Sad", "😡 Angry", "😌 Calm", "😰 Anxious", "🤩 Excited"]

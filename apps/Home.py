@@ -1,5 +1,6 @@
 from streamlit_cookies_controller import CookieController # some user data will be saved in a cookie
 from streamlit_option_menu import option_menu
+import apps.theme as theme
 from datetime import date
 import streamlit as st 
 import pandas as pd 
