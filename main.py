@@ -8,10 +8,8 @@ from apps.theme import apply_custom_theme
 
 
 # --- custom page styling
-
-if "theme" not in st.session_state:
-    st.session_state["theme"] = "dark" #default light
-
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = "Home"
 
 st.markdown(   
     """
@@ -67,7 +65,7 @@ with st.sidebar: # everything that goes inside the sidebar
                 "bi bi-heart", 
                 "bi bi-gear-wide-connected"
                 ],
-        default_index = 0 , # selects "Home" as the default page,,
+        default_index = ["Home", "Mood tracker", "Talk to Auntie", "Settings"].index(st.session_state["current_page"]), # selects "Home" as the default page,,
         styles= menu_styles
     
     )

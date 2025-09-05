@@ -29,9 +29,16 @@ def app():
     st.divider()
     
     # theme toggle
-    # st.subheader("Appearance")
-    # theme = st.radio("Choose theme", ["light", "Dark"], horizontal=True)
-    # st.session_state["theme"] = theme
+    st.subheader("Change appearance")
+    if st.button("Toggle themes"):
+        if st.session_state["theme"] == "light":
+            st.session_state["theme"] = "dark"
+        else:
+            st.session_state["theme"] = "light"
+        
+        # to stay on the settings page after reruning
+        st.session_state["current_page"] = "Settings"
+        st.rerun()
 
 
     # export data
@@ -57,8 +64,8 @@ def app():
             st.info("No mood data file fount to reset.")
     
     # Chart customizatiion
-    st.subheader("Chart Settings")
-    color = st.color_picker("Choose chart color", "#BA5DBA")
-    st.session_state["chart_color"] = color
+    # st.subheader("Chart Settings")
+    # color = st.color_picker("Choose chart color", "#BA5DBA")
+    # st.session_state["chart_color"] = color
 
-    st.markdown("Changes will apply when you return to the mood tracker page")
+    # st.markdown("Changes will apply when you return to the mood tracker page")

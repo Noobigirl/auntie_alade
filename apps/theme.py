@@ -2,29 +2,34 @@
 import streamlit as st
 
 if "theme" not in st.session_state:
-    st.session_state["theme"] = "dark" #default light
+    st.session_state["theme"] = "light" #default light
 
 def apply_custom_theme():
-    theme = st.session_state.get("theme", "dark").lower() #default light
+    theme = st.session_state.get("theme", "light").lower() #default light
 
-    if theme.lower() == "dark": # default light
+    if theme.lower() == "dark":
         st.markdown(
             """
             <style>
+
+
+                header[data-testid="stHeader"] {
+                    background-color: #BA68A0 !important;
+                }
                 body {
-                    background-color: #914479;
+                    background-color: #BA68A0;
                     color: #EAEAEA;
                 }
 
                 .stApp{
-                    background-color: #914479
+                    background-color: #BA68A0
                 }
                 .stRadio label, .stMarkdown, .stButton label, h1, h2, h3{
                     color: #EAEAEA !important;
                 }
 
                 .css-1d391kg, .stTextInput, .stSelectbox, .stFileUploader {
-                    background-color: #914479!important;
+                    background-color: #BA68A0!important;
                     color: #EAEAEA !important;
                 }
 
@@ -33,13 +38,18 @@ def apply_custom_theme():
                 }
 
                 .stButton button {
-                    background-color: #D481B6 !important;
+                    background-color: #DBA7C9 !important;
                     color: #EAEAEA !important;
                     border: none;
                 }
 
-                .stInfo {
-                    background-color: #121212
+                div[data-testid="stFileUploader"] section button {
+                    background-color: #DBA7C9 !important;
+                    color: #EAEAEA !important;
+                }
+ 
+                div[data-testid="stChatInput"]{
+                    background-color: #BA68A0 !important;
                 }
 
                 .stButton buttoh:hover{
@@ -47,7 +57,11 @@ def apply_custom_theme():
                 }
 
                 .stSidebar{
-                    background-color: #49243E
+                    background-color: #914377 !important;
+                }
+
+                foot{
+                    background-color: #BA68A0
                 }
             </style>
             """,
@@ -55,8 +69,8 @@ def apply_custom_theme():
         )
 
         return {
-            "container": {"padding": "5px", "background-color": "#914479"},
-            "nav-link-selected": {"background-color": "#D481B6", "color":"white"},
+            "container": {"padding": "5px", "background-color": "#BA68A0"},
+            "nav-link-selected": {"background-color": "#DBA7C9", "color":"white"},
             "nav-link": {
                 "color": "#EAEAEA"
             },
