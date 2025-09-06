@@ -13,7 +13,6 @@ AiClient = OpenAI(
     api_key= os.getenv("OPENAI_API_KEY")
 )
 
-
 def app() -> None:
     st.title("Talk to Auntie Alade")
     st.write("")

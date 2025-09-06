@@ -27,7 +27,6 @@ def app() -> None:
             
             with open(file_path, "wb") as f:
                 f.write(period_data.getbuffer())
-            
             st.success(f"File uploaded and saved at {file_path}")
 
             # storing the file path in cookies
@@ -165,10 +164,9 @@ def app() -> None:
                     "length": cycle_lenght
                 }
                 )
-
                 # going back to start period button
                 st.session_state.on_period = False
-
+                
             # recording period data
             st.session_state.period_date = str(st.date_input("Today's date"))
             st.session_state.pain = st.slider("Pain level (0= none, 10 = severe)", 0, 10, 5)

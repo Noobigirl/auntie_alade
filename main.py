@@ -4,6 +4,7 @@ import apps.Home as Home
 import apps.Auntie as Auntie
 import apps.MoodTracker as mood
 import apps.Settings as settings
+import login
 from apps.theme import apply_custom_theme
 
 
@@ -73,7 +74,7 @@ with st.sidebar: # everything that goes inside the sidebar
 
 # --- page handling
 if selected_page == "Home":
-   Home.app()
+   login.app()
 elif selected_page == "Mood tracker":
    mood.app()
 elif selected_page == "Talk to Auntie":

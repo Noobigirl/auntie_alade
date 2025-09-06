@@ -12,7 +12,6 @@ def apply_custom_theme():
             """
             <style>
 
-
                 header[data-testid="stHeader"] {
                     background-color: #BA68A0 !important;
                 }
@@ -63,6 +62,7 @@ def apply_custom_theme():
                 foot{
                     background-color: #BA68A0
                 }
+                
             </style>
             """,
             unsafe_allow_html= True

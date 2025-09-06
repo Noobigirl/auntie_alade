@@ -5,7 +5,6 @@ import os
 
 DATA_FILE = "moods.csv"
 
-
 def app():
     th.apply_custom_theme()
     st.title("Settings")
@@ -63,9 +62,3 @@ def app():
         else:
             st.info("No mood data file fount to reset.")
     
-    # Chart customizatiion
-    # st.subheader("Chart Settings")
-    # color = st.color_picker("Choose chart color", "#BA5DBA")
-    # st.session_state["chart_color"] = color
-
-    # st.markdown("Changes will apply when you return to the mood tracker page")
