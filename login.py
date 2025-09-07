@@ -77,7 +77,7 @@ def app():
         st.session_state["user_id"] = None
     
     if "username" not in st.session_state:
-        st.session_state["usename"] = None
+        st.session_state["username"] = None
 
     st.write("")
     signup_tab, login_tab = st.tabs(["Sign up", "Login"])
@@ -113,7 +113,7 @@ def app():
                         csv_bytes = create_default_csv_bytes()
 
                         try: 
-                            upload_user_files(user_id, "peroid_data.csv", csv_bytes)
+                            upload_user_files(user_id, "period_data.csv", csv_bytes)
                             st.success("Account created and your data file was initialized")
                         except Exception as e:
                             st.warning("Account created but initial file upload failed: " + str(e))  
