@@ -3,3 +3,4 @@ pandas
 openai
 python-dotenv
 streamlit_option_menu
+supabase
