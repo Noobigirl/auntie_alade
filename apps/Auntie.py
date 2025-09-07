@@ -1,16 +1,16 @@
 from openai import OpenAI
-from dotenv import load_dotenv 
+
 import apps.theme as theme
 import streamlit as st
 import time
-import os
 
-load_dotenv() 
+
+
 
 # initializig openRouter client
 AiClient = OpenAI(
     base_url= "https://openrouter.ai/api/v1",
-    api_key= os.getenv("OPENAI_API_KEY")
+    api_key= st.secrets["OPENAI_API_KEY"]
 )
 
 

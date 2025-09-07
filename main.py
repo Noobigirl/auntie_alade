@@ -8,14 +8,13 @@ import apps.MoodTracker as mood
 import apps.Settings as settings
 import login
 from apps.theme import apply_custom_theme
-from dotenv import load_dotenv
 import os
 
 
-load_dotenv()
 # configuring supabase client
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+
 if "supabase" not in st.session_state:
     st.session_state.supabase= create_client(SUPABASE_URL, SUPABASE_KEY)
 if "current_page" not in st.session_state:
