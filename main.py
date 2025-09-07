@@ -1,5 +1,6 @@
 from streamlit_option_menu import option_menu
 import streamlit as st 
+import supabase
 import apps.Home as Home
 import apps.Auntie as Auntie
 import apps.MoodTracker as mood
@@ -11,6 +12,9 @@ from apps.theme import apply_custom_theme
 # --- custom page styling
 if "current_page" not in st.session_state:
     st.session_state["current_page"] = "Home"
+
+if "user_id" not in st.session_state:
+    st.session_state["user_id"] = None
 
 st.markdown(   
     """
@@ -40,45 +44,63 @@ st.markdown(
     unsafe_allow_html= True
 )
 
+if not st.session_state["user_id"]:
+    login.app()
 
-# --- page config
-st.set_page_config(
-    page_title= "Auntie Alade",
-    #page icon = (I'll add it later)
-    initial_sidebar_state= "expanded" # making the sidebar open by default
-)
-
-
-# --- App UI 
-
-main_page_content = st.empty()
-# sidebar menu
-theme = st.session_state["theme"]
-menu_styles = apply_custom_theme()
-with st.sidebar: # everything that goes inside the sidebar
-
-    selected_page = option_menu(
-        menu_title = "Menu",
-        menu_icon= "bi bi-three-dots-vertical",
-        options = ["Home", "Mood tracker", "Talk to Auntie", "Settings"],
-        icons = ["bi bi-house-door-fill",  # got the icons from bootstrap
-                "bi bi-emoji-laughing", 
-                "bi bi-heart", 
-                "bi bi-gear-wide-connected"
-                ],
-        default_index = ["Home", "Mood tracker", "Talk to Auntie", "Settings"].index(st.session_state["current_page"]), # selects "Home" as the default page,,
-        styles= menu_styles
-    
+else:
+    # --- page config
+    st.set_page_config(
+        page_title= "Auntie Alade",
+        #page icon = (I'll add it later)
+        initial_sidebar_state= "expanded" # making the sidebar open by default
     )
 
 
-# --- page handling
-if selected_page == "Home":
-   login.app()
-elif selected_page == "Mood tracker":
-   mood.app()
-elif selected_page == "Talk to Auntie":
-    Auntie.app()
-else:
-   settings.app()
+    # --- App UI 
+
+    main_page_content = st.empty()
+    # sidebar menu
+    menu_styles = apply_custom_theme()
+    with st.sidebar: # everything that goes inside the sidebar
+
+        selected_page = option_menu(
+            menu_title = "Menu",
+            menu_icon= "bi bi-three-dots-vertical",
+            options = ["Home", "Mood tracker", "Talk to Auntie", "Settings"],
+            icons = ["bi bi-house-door-fill",  # got the icons from bootstrap
+                    "bi bi-emoji-laughing", 
+                    "bi bi-heart", 
+                    "bi bi-gear-wide-connected"
+                    ],
+            default_index = ["Home", "Mood tracker", "Talk to Auntie", "Settings"].index(st.session_state["current_page"]), # selects "Home" as the default page,,
+            styles= menu_styles
+        
+        )
+
+        # showing logged in user's info
+        if st.session_state["user_id"]:
+            st.write("")
+            st.success(f"Welcome back, {st.session_state['username']}!")
+            if st.button("Log out"):
+                try:
+                    supabase.auth.sign_out()
+                except:
+                    pass
+
+                st.session_state["user_id"] = None
+                st.session_state["username"] = None
+                st.rerun()
+    
+
+
+
+    # --- page handling
+    if selected_page == "Home":
+        Home.app()
+    elif selected_page == "Mood tracker":
+        mood.app()
+    elif selected_page == "Talk to Auntie":
+        Auntie.app()
+    else:
+        settings.app()
 
