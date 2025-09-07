@@ -76,13 +76,12 @@ else:
         selected_page = option_menu(
             menu_title = "Menu",
             menu_icon= "bi bi-three-dots-vertical",
-            options = ["Home", "Mood tracker", "Talk to Auntie", "Settings"],
+            options = ["Home", "Talk to Auntie", "Settings"],
             icons = ["bi bi-house-door-fill",  # got the icons from bootstrap
                     "bi bi-emoji-laughing", 
-                    "bi bi-heart", 
                     "bi bi-gear-wide-connected"
                     ],
-            default_index = ["Home", "Mood tracker", "Talk to Auntie", "Settings"].index(st.session_state["current_page"]), # selects "Home" as the default page,,
+            default_index = ["Home", "Talk to Auntie", "Settings"].index(st.session_state["current_page"]), # selects "Home" as the default page,,
             styles= menu_styles
         
         )
@@ -108,10 +107,10 @@ else:
     if selected_page == "Home":
         Home.get_client(st.session_state.supabase)
         Home.app()
-    elif selected_page == "Mood tracker":
-        mood.app()
     elif selected_page == "Talk to Auntie":
         Auntie.app()
     else:
+        settings.get_user_id(st.session_state["user_id"])
+        settings.get_client(st.session_state.supabase)
         settings.app()
 

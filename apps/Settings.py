@@ -1,19 +1,40 @@
 import streamlit as st
 import pandas as pd
 import apps.theme as th
-import os
+from login import (
+    user_is_logged_in,
+    st,
+    upload_user_files,
+    download_user_files,
+    delete_user_file,
+    list_user_files,
+)
 
-DATA_FILE = "moods.csv"
+DATA_FILENAME = "period_data.csv"  # the main file every user has
+
+# Supabase configuration
+supabase = None
+user_id = None
+BUCKET = "user-files"
+
+def get_client(baseclient):
+    global supabase
+    supabase = baseclient
+
+def get_user_id(iduser):
+    global user_id
+    user_id = iduser
+
 
 def app():
     th.apply_custom_theme()
     st.title("Settings")
     st.write(" ")
     st.markdown(
-        "I hope you like this app I made for the **Athena Awards hackathon**."
+        "I hope you like this app I made with love"
         "Check out the source code below!"
         )
-    st.link_button("Github repo", "") # add link to the repo
+    st.link_button("Github repo", "https://github.com/Noobigirl/auntie_alade") # add link to the repo
 
     st.subheader("Privacy & Data Security")
     st.markdown(
@@ -40,25 +61,37 @@ def app():
         st.rerun()
 
 
-    # export data
-    st.subheader(" Data Management")
-    if os.path.exists(DATA_FILE):
-        df = pd.read_csv(DATA_FILE)
-        st.download_button(
-            label= "Download mood data as a CSV",
-            data = df.to_csv(index=False).encode("UTF-8"),
-            file_name="mood_data.csv",
-            mime="text/csv"
-        )
-    else:
-        st.info("No mood data available yet to export.")
 
+
+    st.subheader("Data Management")
+
+    if not user_is_logged_in():
+        st.warning("You need to be logged in to manage your data.")
+        return
+    # Check if user has any files
+
+    files = list_user_files(user_id)
+    if not files or DATA_FILENAME not in [f["name"] for f in files]:
+        st.info("No data file found for your account.")
+        return
     
-    # Reset data
-    if st.button("Reset All mood data"):
-        if os.path.exists(DATA_FILE):
-            os.remove(DATA_FILE)
-            st.success("Mood data has veed reset.")
-        else:
-            st.info("No mood data file fount to reset.")
+    # Download button
+    file_bytes = download_user_files(user_id, DATA_FILENAME)
+    st.download_button(
+        label="Download my data",
+        data=file_bytes,
+        file_name=DATA_FILENAME,
+        mime="text/csv"
+    )
+
+    # Delete button with confirmation
+    st.write("")  # spacing
+    if st.button("Delete my data from Supabase"):
+        confirm = st.checkbox("I confirm that I want to permanently delete my data")
+        if confirm:
+            delete_user_file(user_id, DATA_FILENAME)
+            st.success("Your data has been deleted from Supabase.")
+
+        
+
     

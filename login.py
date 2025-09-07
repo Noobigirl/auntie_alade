@@ -71,7 +71,7 @@ def get_user_id_from_auth_response(resp):
 
 def app():
 
-    st.title("Sign up/ Login")
+    st.title("Welcome to Auntie Alade")
 
     if "user_id" not in st.session_state:
         st.session_state["user_id"] = None

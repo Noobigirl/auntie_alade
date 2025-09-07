@@ -197,20 +197,21 @@ def app():
 
     # Loading period data from supabase
     df = load_user_data()
+    message_placeholder = st.empty()
 
     if df is not None and not df.empty:
-        st.success("Using your saved period data")
+        message_placeholder.success("Using your saved period data")
     else:
-        st.warning("No period data found. Creating a new file for you...")
+        message_placeholder.warning("No period data found. Creating a new file for you...")
         # Create empty DataFrame with correct columns
         df = pd.DataFrame(columns=["date", "has_period_started", "flow", "pain", "mood"])
         # Save empty file to Supabase
         try:
             csv_bytes = df.to_csv(index=False).encode('utf-8')
             upload_user_file(user_id, PERIOD_FILENAME, csv_bytes)
-            st.success("New period data file created!")
+            message_placeholder.success("New period data file created!")
         except Exception as e:
-            st.error(f"Failed to create data file: {e}")
+            message_placeholder.error(f"Failed to create data file: {e}")
             return
     # initialize session state per user
 
