@@ -151,14 +151,7 @@ def app():
     if not user_id:
         st.error("Please log in to access the period tracker.")
         return
-    
-    # try:
-    #     user = supabase.auth.get_user()
-    #     st.write(f"DEBUG - Authenticated user: {user.user.id if user.user else 'None'}")
-    #     st.write(f"DEBUG - Session user_id: {user_id}")
-    # except Exception as e:
-    #     st.error(f"Authentication check failed: {e}")
-    
+      
     PERIOD_FILENAME = "period_data.csv"
 
     # Loading user file data
@@ -219,20 +212,24 @@ def app():
         except Exception as e:
             st.error(f"Failed to create data file: {e}")
             return
+    # initialize session state per user
 
-    # Tracking ongoing cycle state
-    if "on_period" not in st.session_state:
-        st.session_state.on_period = False
+    if "user_session_initialized" not in st.session_state:
+        # check if user has an ongoing period in their saved data
+        ongoing_period= False
+        current_start = None
+        if df is not None and not df.empty:
+            last_cycle = df.iloc[-1]
+            if "end" in last_cycle and pd.isna(last_cycle["end"]):
+                ongoing_period = True
+                current_start = last_cyle["start"]
 
-    if "current_start" not in st.session_state:
-        st.session_state.current_start = None
-
-    if "cycles" not in st.session_state:
+        st.session_state.on_period = ongoing_period
+        st.session_state.current_start = current_start
         st.session_state.cycles = []
-
-    if "period_date" not in st.session_state:
         st.session_state.period_date = None
-    
+        st.session_state.user_session_initialized = True
+
     # Period data input
     if df is not None:
         if not st.session_state.on_period:  # Not currently on period
