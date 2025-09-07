@@ -1,3 +1,5 @@
+[![Athena Award Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Faward.athena.hackclub.com%2Fapi%2Fbadge)](https://award.athena.hackclub.com?utm_source=readme)
+
 # Auntie Alade  
 
 Auntie Alade is a **period & mood tracking web app** powered by **Streamlit** and **Supabase**.  
@@ -51,6 +53,4 @@ Auntie Alade is a work in progress, and there are a few quirks to be aware of:
 - **OpenRouter API** (chatbot)  
 
 ---
-
-##  Link to the app
-  (coming soon)
+[Link to the app](https://auntiealade-m5gguappoxhscggbfvukn3g.streamlit.app/)
