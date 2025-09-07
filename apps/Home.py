@@ -4,25 +4,25 @@ import pandas as pd
 import altair as alt
 import io 
 import calendar
-from supabase import create_client
-import os
-from dotenv import load_dotenv
+
 
 # Supabase configuration
-load_dotenv()
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase = None
+def get_client(baseclient):
+    global supabase
+    supabase = baseclient
+
 BUCKET = "user-files"
 
 # Helper functions for Supabase storage
 def upload_user_file(user_id: str, filename: str, file_bytes: bytes):
+   
     """Upload bytes to supabase storage under user_id/filename"""
     path = f"{user_id}/{filename}"
     try:
         res = supabase.storage.from_(BUCKET).upload(path,
                                                     file_bytes,
-                                                    {"content-type": "text/csv"}
+                                                    {"content-type": "text/csv", "upsert": "true"}
         )
         return res
     except Exception as e:

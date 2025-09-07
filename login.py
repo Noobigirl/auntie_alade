@@ -5,12 +5,11 @@ import os
 import pandas as pd
 import io
 
-load_dotenv()
-# configuring supabase client
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+# Supabase configuration
+supabase = None
+def get_client(baseclient):
+    global supabase
+    supabase = baseclient
 BUCKET = "user-files" # don't forget to fix the bucket issues
 
 # -- helper functions
@@ -71,6 +70,7 @@ def get_user_id_from_auth_response(resp):
 # --- Streamlit app UI
 
 def app():
+
     st.title("Sign up/ Login")
 
     if "user_id" not in st.session_state:

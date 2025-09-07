@@ -1,21 +1,30 @@
 from streamlit_option_menu import option_menu
 import streamlit as st 
 import supabase
+from supabase import create_client
 import apps.Home as Home
 import apps.Auntie as Auntie
 import apps.MoodTracker as mood
 import apps.Settings as settings
 import login
 from apps.theme import apply_custom_theme
+from dotenv import load_dotenv
+import os
 
 
-# --- custom page styling
+load_dotenv()
+# configuring supabase client
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+if "supabase" not in st.session_state:
+    st.session_state.supabase= create_client(SUPABASE_URL, SUPABASE_KEY)
 if "current_page" not in st.session_state:
     st.session_state["current_page"] = "Home"
 
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = None
 
+# --- custom page styling
 st.markdown(   
     """
     <style>
@@ -45,6 +54,7 @@ st.markdown(
 )
 
 if not st.session_state["user_id"]:
+    login.get_client(st.session_state.supabase)
     login.app()
 
 else:
@@ -96,6 +106,7 @@ else:
 
     # --- page handling
     if selected_page == "Home":
+        Home.get_client(st.session_state.supabase)
         Home.app()
     elif selected_page == "Mood tracker":
         mood.app()
